@@ -1,0 +1,46 @@
+experiment:
+  name: "exp02_basicunet"
+  seed: 42
+
+model:
+  image_encoder:
+    name: "BasicUNetEncoder"
+    in_channels: 1
+    features: [32, 32, 64, 128, 256, 32]  # MONAI 기본값
+    out_dim: 256              # 최심층 encoder feature
+  tabular_encoder:
+    name: "MLP"
+    radiomics_dim: 30
+    clinical_dim: 10
+    hidden_dims: [64, 64]
+    out_dim: 96
+  fusion:
+    concat_dim: 352           # 256 + 64 + 32
+    hidden_dim: 128
+    dropout: 0.3
+
+data:
+  ct_root: "data/processed/ct_nifti/"
+  radiomics_csv: "data/processed/radiomics_features.csv"
+  clinical_csv: "data/processed/clinical.csv"
+  split_csv: "data/processed/splits_seed42.csv"
+  roi_size: [128, 128, 64]
+  hu_min: -1000
+  hu_max: 400
+
+train:
+  batch_size: 4
+  epochs: 50
+  optimizer:
+    name: "AdamW"
+    lr: 1.0e-4
+    weight_decay: 1.0e-5
+  scheduler:
+    name: "CosineAnnealingLR"
+    T_max: 50
+  early_stopping_patience: 10
+  amp: true
+
+output:
+  checkpoint_dir: "checkpoints/basicunet/"
+  results_dir: "experiments/exp02_basicunet/"

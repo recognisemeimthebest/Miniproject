@@ -1,0 +1,52 @@
+experiment:
+  name: "exp03_mednext"
+  seed: 42
+
+model:
+  image_encoder:
+    name: "MedNeXtEncoder"
+    in_channels: 1
+    init_filters: 16          # 메모리 절약: 기본 32에서 낮춤
+    blocks_down: [2, 2, 2, 2]
+    kernel_size: 3            # 메모리 절약: 기본 7에서 낮춤 (OOM 방지)
+    out_dim: 256
+  tabular_encoder:
+    name: "MLP"
+    radiomics_dim: 30
+    clinical_dim: 10
+    hidden_dims: [64, 64]
+    out_dim: 96
+  fusion:
+    concat_dim: 352           # 256 + 64 + 32
+    hidden_dim: 128
+    dropout: 0.3
+
+data:
+  ct_root: "data/processed/ct_nifti/"
+  radiomics_csv: "data/processed/radiomics_features.csv"
+  clinical_csv: "data/processed/clinical.csv"
+  split_csv: "data/processed/splits_seed42.csv"
+  roi_size: [128, 128, 64]
+  hu_min: -1000
+  hu_max: 400
+
+train:
+  batch_size: 2               # MedNeXt는 메모리 많이 씀 → batch 줄임
+  epochs: 50
+  optimizer:
+    name: "AdamW"
+    lr: 1.0e-4
+    weight_decay: 1.0e-5
+  scheduler:
+    name: "CosineAnnealingLR"
+    T_max: 50
+  early_stopping_patience: 10
+  amp: true
+  gradient_checkpointing: true  # OOM 방지용
+
+output:
+  checkpoint_dir: "checkpoints/mednext/"
+  results_dir: "experiments/exp03_mednext/"
+
+# MedNeXt pretrained weight 경로 (MIC-DKFZ/MedNeXt repo에서 다운로드)
+# pretrained_path: "checkpoints/pretrained/mednext_pretrained.pth"

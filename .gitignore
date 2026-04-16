@@ -1,0 +1,65 @@
+# ===== 데이터 (절대 올리지 않음) =====
+data/raw/
+data/processed/
+data/external/
+*.nii
+*.nii.gz
+*.dcm
+*.mha
+*.mhd
+*.nrrd
+
+# ===== 모델 체크포인트 =====
+checkpoints/
+*.pt
+*.pth
+*.ckpt
+*.pkl
+
+# ===== 실험 결과 (무거운 파일) =====
+experiments/*/predictions.npy
+experiments/*/gradcam_volumes/
+
+# ===== AI 툴 캐시 (user-specific) =====
+.antigravity/cache/
+.cursor/
+.claude/
+.aider/
+.continue/
+
+# ===== Antigravity / Windsurf =====
+# 아래는 팀 공유 파일이므로 트래킹 유지
+# !.antigravityignore
+# !.geminiignore
+# !.windsurf/rules
+
+# ===== Python =====
+__pycache__/
+*.py[cod]
+*.pyc
+*.pyo
+.ipynb_checkpoints/
+*.egg-info/
+dist/
+build/
+.eggs/
+*.egg
+
+# ===== 환경 / 시크릿 =====
+.env
+.env.*
+*.local.json
+secrets.yaml
+
+# ===== Jupyter =====
+.ipynb_checkpoints/
+
+# ===== OS =====
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ===== IDE =====
+.idea/
+*.suo
+*.user

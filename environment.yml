@@ -1,0 +1,55 @@
+name: luna-xai
+channels:
+  - pytorch
+  - nvidia
+  - conda-forge
+  - defaults
+
+dependencies:
+  - python=3.10
+  - pip
+
+  # Deep Learning
+  - pytorch>=2.1
+  - torchvision
+  - pytorch-cuda=12.1
+
+  - pip:
+    # Medical Imaging
+    - monai>=1.3
+    - SimpleITK
+    - nibabel
+    - pydicom
+
+    # Radiomics
+    - pyradiomics
+
+    # ML / Data
+    - scikit-learn>=1.3
+    - pandas>=2.0
+    - numpy>=1.24
+
+    # XAI
+    - shap
+    - pytorch-grad-cam
+    - captum
+
+    # Survival Analysis
+    - lifelines
+
+    # Visualization
+    - matplotlib
+    - seaborn
+    - plotly
+
+    # Config
+    - omegaconf
+    - hydra-core
+
+    # Service
+    - streamlit>=1.30
+
+    # Utils
+    - tqdm
+    - pyyaml
+    - scipy

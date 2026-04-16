@@ -1,0 +1,47 @@
+experiment:
+  name: "exp01_segresnet"
+  seed: 42
+
+model:
+  image_encoder:
+    name: "SegResNetEncoder"
+    in_channels: 1
+    init_filters: 32          # bottleneck: 512ch @ 8x8x4
+    blocks_down: [1, 2, 2, 4]
+    out_dim: 512
+  tabular_encoder:
+    name: "MLP"
+    radiomics_dim: 30         # LASSO 후 확정
+    clinical_dim: 10
+    hidden_dims: [64, 64]
+    out_dim: 96               # radiomics(64) + clinical(32)
+  fusion:
+    concat_dim: 608           # 512 + 64 + 32
+    hidden_dim: 128
+    dropout: 0.3
+
+data:
+  ct_root: "data/processed/ct_nifti/"
+  radiomics_csv: "data/processed/radiomics_features.csv"
+  clinical_csv: "data/processed/clinical.csv"
+  split_csv: "data/processed/splits_seed42.csv"
+  roi_size: [128, 128, 64]
+  hu_min: -1000
+  hu_max: 400
+
+train:
+  batch_size: 4
+  epochs: 50
+  optimizer:
+    name: "AdamW"
+    lr: 1.0e-4
+    weight_decay: 1.0e-5
+  scheduler:
+    name: "CosineAnnealingLR"
+    T_max: 50
+  early_stopping_patience: 10
+  amp: true                   # mixed precision
+
+output:
+  checkpoint_dir: "checkpoints/segresnet/"
+  results_dir: "experiments/exp01_segresnet/"
