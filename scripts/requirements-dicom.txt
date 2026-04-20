@@ -1,0 +1,10 @@
+# DICOM → NIfTI 변환만을 위한 최소 의존성
+# (전체 luna-xai env 없이도 이것만 설치하면 dicom_to_nifti.py 실행 가능)
+#
+# 설치:  pip install -r scripts/requirements-dicom.txt
+
+pydicom>=2.4
+SimpleITK>=2.3
+nibabel>=5.0
+rt-utils>=1.2
+numpy>=1.24

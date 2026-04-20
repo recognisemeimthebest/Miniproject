@@ -2,12 +2,20 @@
 data/raw/
 data/processed/
 data/external/
+metadata/
+metadata.zip
 *.nii
 *.nii.gz
 *.dcm
 *.mha
 *.mhd
 *.nrrd
+
+# ===== 로컬 가상환경 (각자 구성) =====
+venv-dicom/
+anaconda_envsluna-xai/
+venv/
+.venv/
 
 # ===== 모델 체크포인트 =====
 checkpoints/

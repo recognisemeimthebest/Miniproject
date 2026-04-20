@@ -20,9 +20,10 @@ dependencies:
     - SimpleITK
     - nibabel
     - pydicom
+    - rt-utils      # RTSTRUCT → binary mask 변환 (GTV)
 
     # Radiomics
-    - pyradiomics
+    # - pyradiomics   # C가 별도 env에서 사용 (Windows pip 빌드 불안정)
 
     # ML / Data
     - scikit-learn>=1.3
