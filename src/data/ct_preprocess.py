@@ -16,11 +16,13 @@ from __future__ import annotations
 
 from typing import Sequence
 
+import numpy as np
 from monai.transforms import (
     Compose,
-    CropForegroundd,
     EnsureChannelFirstd,
+    KeepLargestConnectedComponentd,
     LoadImaged,
+    MapTransform,
     Orientationd,
     RandAffined,
     RandFlipd,
@@ -35,6 +37,50 @@ from monai.transforms import (
 KEYS_IMAGE = "image"
 KEYS_MASK = "mask"
 KEYS_BOTH = [KEYS_IMAGE, KEYS_MASK]
+
+
+class CropAroundMaskCoMd(MapTransform):
+    """Mask의 무게중심(Center of Mass)을 중심으로 고정 ROI 크기로 crop.
+
+    `CropForegroundd` + `ResizeWithPadOrCropd`(volume center) 조합은 multi-blob
+    mask(원발 GTV + 위성 병변 + 림프절)에서 중앙 crop window가 빈 공간에 떨어져
+    mask가 통째로 사라지는 버그가 있음. 이 transform은 foreground의 무게중심을
+    crop 중심으로 잡아 **항상 mask 내부에서 자르도록** 보장.
+
+    경계에 가까우면 일부가 잘려 ROI보다 작은 volume이 나올 수 있으므로,
+    뒤에 `ResizeWithPadOrCropd`를 붙여 부족분을 zero-pad 하는 것을 권장.
+
+    Args:
+        keys: crop을 적용할 key 목록 (image, mask 모두).
+        source_key: 무게중심 계산에 쓸 mask key.
+        roi_size: 최종 ROI 크기 (voxel).
+    """
+
+    def __init__(self, keys: Sequence[str], source_key: str, roi_size: Sequence[int]):
+        super().__init__(keys)
+        self.source_key = source_key
+        self.roi_size = np.asarray(roi_size, dtype=int)
+
+    def __call__(self, data):
+        d = dict(data)
+        mask = d[self.source_key]
+        arr = mask.cpu().numpy() if hasattr(mask, "cpu") else np.asarray(mask)
+        fg = arr[0] > 0 if arr.ndim == 4 else arr > 0
+        vol_shape = np.asarray(fg.shape, dtype=int)
+
+        if fg.any():
+            com = np.argwhere(fg).mean(axis=0).round().astype(int)
+        else:
+            com = vol_shape // 2
+
+        # CoM 주변에 roi_size만큼 잡되, 볼륨 경계 안으로 clamp
+        lo = np.clip(com - self.roi_size // 2, 0, np.maximum(vol_shape - self.roi_size, 0))
+        hi = np.minimum(lo + self.roi_size, vol_shape)
+
+        for k in self.keys:
+            v = d[k]
+            d[k] = v[:, lo[0]:hi[0], lo[1]:hi[1], lo[2]:hi[2]]
+        return d
 
 
 def build_preprocess(
@@ -80,10 +126,16 @@ def build_preprocess(
             clip=True,
         ),
 
-        # 5. GTV mask 중심으로 foreground crop (빈 공간 제거)
-        CropForegroundd(keys=KEYS_BOTH, source_key=KEYS_MASK, allow_smaller=True),
+        # 5. Multi-blob mask(원발+림프절+위성병변) 중 가장 큰 component만 유지.
+        #    NSCLC-Radiomics의 GTV-1 ROI는 공간적으로 분리된 blob이 섞여있어서
+        #    합집합 bbox의 가운데가 빈 공간이 되는 경우가 많음 → 22% 환자에서
+        #    mask가 통째로 사라지는 버그의 근원. 원발 GTV만 남겨 prognosis에 집중.
+        KeepLargestConnectedComponentd(keys=KEYS_MASK),
 
-        # 6. 고정 크기로 맞추기 (작으면 pad, 크면 center crop)
+        # 6. 원발 GTV 무게중심 기준으로 roi_size crop (volume 중앙이 아니라 mask 중앙).
+        CropAroundMaskCoMd(keys=KEYS_BOTH, source_key=KEYS_MASK, roi_size=roi_size),
+
+        # 7. CoM이 볼륨 경계 근처면 ROI보다 작게 나올 수 있어 부족분을 zero-pad.
         ResizeWithPadOrCropd(keys=KEYS_BOTH, spatial_size=roi_size),
     ]
 
