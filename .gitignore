@@ -1,73 +1,24 @@
-# ===== 데이터 (절대 올리지 않음) =====
-data/raw/
-data/processed/
-data/external/
-metadata/
-metadata.zip
+# 원본 데이터 (용량 크고 TCIA 라이선스 문제)
+*.csv
+*.dcm
 *.nii
 *.nii.gz
-*.dcm
-*.mha
-*.mhd
-*.nrrd
 
-# ===== 로컬 가상환경 (각자 구성) =====
-venv-dicom/
-anaconda_envsluna-xai/
-venv/
-.venv/
+# 전처리 결과물 (재현 가능하므로 제외)
+output_clinical/
 
-# ===== 모델 체크포인트 =====
-checkpoints/
-*.pt
-*.pth
-*.ckpt
-*.pkl
-
-# ===== 실험 결과 (무거운 파일) =====
-experiments/*/predictions.npy
-experiments/*/gradcam_volumes/
-
-# ===== AI 툴 캐시 (user-specific) =====
-.antigravity/cache/
-.cursor/
-.claude/
-.aider/
-.continue/
-
-# ===== Antigravity / Windsurf =====
-# 아래는 팀 공유 파일이므로 트래킹 유지
-# !.antigravityignore
-# !.geminiignore
-# !.windsurf/rules
-
-# ===== Python =====
+# Python
 __pycache__/
-*.py[cod]
 *.pyc
 *.pyo
 .ipynb_checkpoints/
 *.egg-info/
-dist/
-build/
-.eggs/
-*.egg
 
-# ===== 환경 / 시크릿 =====
+# 환경
 .env
-.env.*
-*.local.json
-secrets.yaml
+venv/
+.venv/
 
-# ===== Jupyter =====
-.ipynb_checkpoints/
-
-# ===== OS =====
+# OS
 .DS_Store
 Thumbs.db
-desktop.ini
-
-# ===== IDE =====
-.idea/
-*.suo
-*.user
